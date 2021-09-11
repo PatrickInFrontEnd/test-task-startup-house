@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useLayoutEffect, useContext } from 'react'
 import styled from 'styled-components'
 import { flexCenter, flexColumn } from '../../components/mixins'
 import useFetch from '../../utils/hooks'
@@ -6,6 +6,7 @@ import SEO from '../../components/SEO/SEO.component'
 import PostModel from '../../models/DataModels/models'
 import PostPreview from '../../components/PostPreview/PostPreview.component'
 import breakpoints from '../../utils/breakpoints'
+import { bcContext } from '../../providers/BreadCrumbProvider'
 
 const Wrapper = styled.div`
     ${flexCenter};
@@ -30,6 +31,12 @@ const PostsContainer = styled.div`
 `
 
 const MainPage: React.FC = () => {
+    const { clearPath } = useContext(bcContext)
+
+    useLayoutEffect(() => {
+        clearPath()
+    }, [])
+
     const {
         data: posts,
         loading,

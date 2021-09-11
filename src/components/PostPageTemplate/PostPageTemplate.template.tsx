@@ -1,13 +1,14 @@
-import React from 'react'
+import React, { useEffect, useContext } from 'react'
 import styled from 'styled-components'
-import PostPageTemplateProps, {
-    PostCommentTemplateProps,
-} from '../../models/PostPageTemplate/models'
+import PostPageTemplateProps from '../../models/PostPageTemplate/models'
 import { PropsTheme } from '../../providers/ThemeProvider/models'
 import { flexColumn, marginToChildren } from '../mixins'
 import PostModel, { PostCommentModel } from '../../models/DataModels/models'
 import useFetch from '../../utils/hooks'
 import breakpoints from '../../utils/breakpoints'
+import { bcContext } from '../../providers/BreadCrumbProvider'
+import PostCommentTemplate from '../PostCommentTemplate/PostComment.template'
+import SEO from '../SEO/SEO.component'
 
 const Wrapper = styled.div`
     ${flexColumn};
@@ -28,6 +29,7 @@ const Wrapper = styled.div`
     & > p {
         display: inline-flex;
         max-width: 50%;
+        line-height: 160%;
 
         ${breakpoints.phone} {
             max-width: 90%;
@@ -49,22 +51,20 @@ const Wrapper = styled.div`
             ${marginToChildren('0 0 10px 0')};
             max-width: 60%;
 
+            h6 {
+                font-size: ${({ theme }: PropsTheme) => theme.fSize?.miniS};
+            }
+
+            p {
+                line-height: 160%;
+            }
+
             ${breakpoints.phone} {
                 max-width: 100%;
             }
         }
     }
 `
-
-const PostCommentTemplate: React.FC<PostCommentTemplateProps> = ({
-    name,
-    content,
-}: PostCommentTemplateProps) => (
-    <li>
-        <h6>{name}</h6>
-        <p>{content}</p>
-    </li>
-)
 
 const PostPageTemplate: React.FC<PostPageTemplateProps> = ({
     id,
@@ -83,9 +83,17 @@ const PostPageTemplate: React.FC<PostPageTemplateProps> = ({
         `https://jsonplaceholder.typicode.com/posts/${id}/comments`
     )
 
-    const postCommentElements = comments?.map(({ name, body, id }) => (
-        <PostCommentTemplate name={name} content={body} key={id} />
+    const postCommentElements = comments?.map(({ email, body, id }) => (
+        <PostCommentTemplate authorName={email} content={body} key={id} />
     ))
+
+    const { setPath } = useContext(bcContext)
+
+    useEffect(() => {
+        if (currentPost) {
+            setPath(currentPost?.title)
+        }
+    }, [currentPost])
 
     if (errorPost) {
         return (
@@ -104,17 +112,26 @@ const PostPageTemplate: React.FC<PostPageTemplateProps> = ({
     }
 
     return (
-        <Wrapper>
-            <h3>{currentPost?.title}</h3>
-            <p>{currentPost?.body}</p>
-            <h4>Comments</h4>
+        <SEO
+            title={`Blog post: ${currentPost?.title}`}
+            description={currentPost?.body}
+        >
+            <Wrapper>
+                <h3>{currentPost?.title}</h3>
+                <p>{currentPost?.body}</p>
+                <h4>Comments</h4>
 
-            {loadingComments ? (
-                <h4>Loading comments...</h4>
-            ) : (
-                <ul>{postCommentElements}</ul>
-            )}
-        </Wrapper>
+                {errorComments && (
+                    <h4>Something went wrong. Could not load comments.</h4>
+                )}
+
+                {loadingComments ? (
+                    <h4>Loading comments...</h4>
+                ) : (
+                    <ul>{postCommentElements}</ul>
+                )}
+            </Wrapper>
+        </SEO>
     )
 }
 

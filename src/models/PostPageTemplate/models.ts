@@ -3,7 +3,7 @@ interface PostPageTemplateProps {
 }
 
 export interface PostCommentTemplateProps {
-    name: string
+    authorName: string
     content: string
 }
 
